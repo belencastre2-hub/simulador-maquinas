@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Avaliação de Máquinas Profissional</title>
+<title>Venda a sua máquina</title>
 
 <style>
 body {
@@ -24,7 +24,13 @@ body {
 
 h1 {
   font-size: 22px;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  font-size: 14px;
+  opacity: 0.7;
+  margin-bottom: 20px;
 }
 
 label {
@@ -32,7 +38,7 @@ label {
   opacity: 0.8;
 }
 
-input, select, button {
+input, select, textarea, button {
   width:100%;
   padding:12px;
   margin-top:8px;
@@ -40,7 +46,7 @@ input, select, button {
   border:none;
 }
 
-input, select {
+input, select, textarea {
   background:#1f2937;
   color:white;
 }
@@ -49,7 +55,7 @@ button {
   background:#22c55e;
   font-weight:bold;
   cursor:pointer;
-  margin-top:15px;
+  margin-top:20px;
 }
 
 .grid {
@@ -58,16 +64,13 @@ button {
   gap:10px;
 }
 
-.result {
+.success {
   margin-top:20px;
-  padding:20px;
-  background:#020617;
-  border-radius:15px;
+  padding:15px;
+  background:#022c22;
+  border-radius:10px;
+  display:none;
 }
-
-.good {color:#22c55e;}
-.mid {color:#facc15;}
-.bad {color:#ef4444;}
 </style>
 </head>
 
@@ -75,110 +78,78 @@ button {
 
 <div class="container">
 
-<h1>Avaliação de Máquina</h1>
+<h1>Venda a sua máquina</h1>
+<p class="subtitle">Receba uma proposta em menos de 24h</p>
+
+<form id="form">
 
 <label>Tipo de máquina</label>
-<select id="tipo">
-  <option value="25000">Escavadora</option>
-  <option value="20000">Mini escavadora</option>
-  <option value="18000">Retroescavadora</option>
-  <option value="16000">Trator agrícola</option>
-  <option value="14000">Trator pequeno</option>
-  <option value="30000">Pá carregadora</option>
-  <option value="35000">Bulldozer</option>
-  <option value="28000">Empilhador</option>
-  <option value="40000">Grua</option>
-  <option value="22000">Colheitadeira</option>
+<select required>
+  <option>Escavadora</option>
+  <option>Mini escavadora</option>
+  <option>Retroescavadora</option>
+  <option>Trator agrícola</option>
+  <option>Pá carregadora</option>
+  <option>Bulldozer</option>
+  <option>Empilhador</option>
+  <option>Grua</option>
+  <option>Colheitadeira</option>
+  <option>Outro</option>
 </select>
 
 <label>Marca</label>
-<input id="marca" placeholder="Ex: Caterpillar">
+<input placeholder="Ex: Caterpillar" required>
+
+<label>Modelo</label>
+<input placeholder="Ex: 320D" required>
 
 <div class="grid">
 <div>
 <label>Ano</label>
-<input type="number" id="ano">
+<input type="number" required>
 </div>
 
 <div>
 <label>Horas</label>
-<input type="number" id="horas">
+<input type="number">
 </div>
 </div>
 
-<h3>Condição real</h3>
+<label>Estado geral</label>
+<select>
+  <option>Excelente</option>
+  <option>Bom</option>
+  <option>Usado</option>
+  <option>Precisa reparação</option>
+</select>
 
-<label><input type="checkbox" id="oleo"> Fugas de óleo</label><br>
-<label><input type="checkbox" id="ferrugem"> Ferrugem</label><br>
-<label><input type="checkbox" id="motor"> Motor reparado</label><br>
-<label><input type="checkbox" id="uso"> Uso intensivo</label><br>
-<label><input type="checkbox" id="pneus"> Pneus gastos</label><br>
+<label>Descrição (opcional)</label>
+<textarea rows="3" placeholder="Detalhes adicionais..."></textarea>
 
-<button onclick="calcular()">Calcular valor</button>
+<h3>Contacto</h3>
 
-<div id="resultado" class="result"></div>
+<input placeholder="Nome" required>
+<input placeholder="Email" required>
+<input placeholder="Telefone" required>
+
+<button type="submit">Receber proposta</button>
+
+</form>
+
+<div class="success" id="success">
+Pedido enviado com sucesso! Entraremos em contacto em breve.
+</div>
 
 </div>
 
 <script>
-function calcular(){
+const form = document.getElementById("form");
 
-let base = parseFloat(tipo.value);
-let ano = parseInt(ano.value);
-let horas = parseInt(horas.value);
-let marca = document.getElementById("marca").value.toLowerCase();
-
-let idade = new Date().getFullYear() - ano;
-let valor = base;
-
-// curva depreciação mais realista
-valor *= Math.pow(0.96, idade);
-valor *= Math.pow(0.985, horas/1000);
-
-// marcas premium
-if(marca.includes("caterpillar")) valor *= 1.15;
-if(marca.includes("komatsu")) valor *= 1.1;
-if(marca.includes("volvo")) valor *= 1.08;
-if(marca.includes("john deere")) valor *= 1.1;
-
-// penalizações
-let risco = 0;
-
-if(oleo.checked){ valor*=0.88; risco++; }
-if(ferrugem.checked){ valor*=0.85; risco++; }
-if(motor.checked){ valor*=0.9; risco++; }
-if(uso.checked){ valor*=0.9; risco++; }
-if(pneus.checked){ valor*=0.92; risco++; }
-
-// incoerência
-if(idade > 12 && horas < 2000){
-  valor *= 0.85;
-  risco++;
-}
-
-// confiança
-let confianca="Alta";
-let cor="good";
-
-if(idade>10 || horas>8000 || risco>=2){
-  confianca="Média";
-  cor="mid";
-}
-
-if(risco>=4){
-  confianca="Baixa";
-  cor="bad";
-}
-
-let min = Math.round(valor*0.9);
-let max = Math.round(valor*1.2);
-
-document.getElementById("resultado").innerHTML=
-`<h2>${min}€ - ${max}€</h2>
-<p class="${cor}">Confiança: ${confianca}</p>
-<p>Baseado em idade, uso, condição e mercado atual</p>`;
-
-}
+form.addEventListener("submit", function(e) {
+  e.preventDefault();
+  form.style.display = "none";
+  document.getElementById("success").style.display = "block";
+});
 </script>
 
 </body>
