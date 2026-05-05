@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Venda a sua máquina em 24h</title>
+<title>Avaliação de Máquinas Profissional</title>
 
 <style>
 body {
-  font-family: Arial;
-  background: linear-gradient(135deg,#0f172a,#1e293b);
+  font-family: Inter, Arial;
+  background: #0b1120;
   color: white;
   display:flex;
   justify-content:center;
@@ -16,46 +16,58 @@ body {
 }
 
 .container {
-  background: rgba(255,255,255,0.05);
-  padding:30px;
-  border-radius:20px;
-  width:420px;
-  backdrop-filter: blur(20px);
+  width: 480px;
+  background: #111827;
+  padding: 30px;
+  border-radius: 20px;
 }
 
-h1 { font-size:20px; }
+h1 {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+label {
+  font-size: 13px;
+  opacity: 0.8;
+}
 
 input, select, button {
   width:100%;
   padding:12px;
-  margin-top:10px;
+  margin-top:8px;
   border-radius:10px;
   border:none;
 }
 
 input, select {
-  background: rgba(255,255,255,0.1);
+  background:#1f2937;
   color:white;
 }
 
 button {
-  background:#38bdf8;
+  background:#22c55e;
   font-weight:bold;
   cursor:pointer;
+  margin-top:15px;
+}
+
+.grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
 }
 
 .result {
   margin-top:20px;
-  padding:15px;
+  padding:20px;
   background:#020617;
-  border-radius:10px;
+  border-radius:15px;
 }
 
 .good {color:#22c55e;}
 .mid {color:#facc15;}
 .bad {color:#ef4444;}
-
-.small {font-size:12px; opacity:0.7;}
 </style>
 </head>
 
@@ -63,41 +75,48 @@ button {
 
 <div class="container">
 
-<h1>Descubra quanto vale a sua máquina</h1>
+<h1>Avaliação de Máquina</h1>
 
+<label>Tipo de máquina</label>
 <select id="tipo">
-  <option value="22000">Escavadora</option>
-  <option value="16000">Trator</option>
-  <option value="19000">Retroescavadora</option>
+  <option value="25000">Escavadora</option>
+  <option value="20000">Mini escavadora</option>
+  <option value="18000">Retroescavadora</option>
+  <option value="16000">Trator agrícola</option>
+  <option value="14000">Trator pequeno</option>
+  <option value="30000">Pá carregadora</option>
+  <option value="35000">Bulldozer</option>
+  <option value="28000">Empilhador</option>
+  <option value="40000">Grua</option>
+  <option value="22000">Colheitadeira</option>
 </select>
 
-<input id="marca" placeholder="Marca (ex: Caterpillar)">
-<input id="ano" type="number" placeholder="Ano">
-<input id="horas" type="number" placeholder="Horas">
+<label>Marca</label>
+<input id="marca" placeholder="Ex: Caterpillar">
 
-<h3>Condição</h3>
+<div class="grid">
+<div>
+<label>Ano</label>
+<input type="number" id="ano">
+</div>
+
+<div>
+<label>Horas</label>
+<input type="number" id="horas">
+</div>
+</div>
+
+<h3>Condição real</h3>
 
 <label><input type="checkbox" id="oleo"> Fugas de óleo</label><br>
 <label><input type="checkbox" id="ferrugem"> Ferrugem</label><br>
 <label><input type="checkbox" id="motor"> Motor reparado</label><br>
 <label><input type="checkbox" id="uso"> Uso intensivo</label><br>
+<label><input type="checkbox" id="pneus"> Pneus gastos</label><br>
 
 <button onclick="calcular()">Calcular valor</button>
 
 <div id="resultado" class="result"></div>
-
-<h3>Receber proposta</h3>
-
-<form action="https://formspree.io/f/COLOCA_AQUI" method="POST">
-
-<input name="nome" placeholder="Nome" required>
-<input name="email" placeholder="Email" required>
-
-<input type="hidden" name="valor" id="valorHidden">
-
-<button type="submit">Receber proposta</button>
-
-</form>
 
 </div>
 
@@ -105,26 +124,39 @@ button {
 function calcular(){
 
 let base = parseFloat(tipo.value);
-let ano = parseInt(document.getElementById("ano").value);
-let horas = parseInt(document.getElementById("horas").value);
+let ano = parseInt(ano.value);
+let horas = parseInt(horas.value);
 let marca = document.getElementById("marca").value.toLowerCase();
 
 let idade = new Date().getFullYear() - ano;
 let valor = base;
 
-valor *= Math.pow(0.94, idade);
-valor *= Math.pow(0.97, horas/1000);
+// curva depreciação mais realista
+valor *= Math.pow(0.96, idade);
+valor *= Math.pow(0.985, horas/1000);
 
-if(marca.includes("caterpillar")) valor *= 1.1;
-if(marca.includes("komatsu")) valor *= 1.05;
+// marcas premium
+if(marca.includes("caterpillar")) valor *= 1.15;
+if(marca.includes("komatsu")) valor *= 1.1;
+if(marca.includes("volvo")) valor *= 1.08;
+if(marca.includes("john deere")) valor *= 1.1;
 
+// penalizações
 let risco = 0;
 
-if(oleo.checked){ valor*=0.9; risco++; }
+if(oleo.checked){ valor*=0.88; risco++; }
 if(ferrugem.checked){ valor*=0.85; risco++; }
-if(motor.checked){ valor*=0.88; risco++; }
+if(motor.checked){ valor*=0.9; risco++; }
 if(uso.checked){ valor*=0.9; risco++; }
+if(pneus.checked){ valor*=0.92; risco++; }
 
+// incoerência
+if(idade > 12 && horas < 2000){
+  valor *= 0.85;
+  risco++;
+}
+
+// confiança
 let confianca="Alta";
 let cor="good";
 
@@ -133,22 +165,19 @@ if(idade>10 || horas>8000 || risco>=2){
   cor="mid";
 }
 
-if(risco>=3){
+if(risco>=4){
   confianca="Baixa";
   cor="bad";
 }
 
 let min = Math.round(valor*0.9);
-let max = Math.round(valor*1.15);
-
-let texto = min+"€ - "+max+"€";
+let max = Math.round(valor*1.2);
 
 document.getElementById("resultado").innerHTML=
-`<h2>${texto}</h2>
+`<h2>${min}€ - ${max}€</h2>
 <p class="${cor}">Confiança: ${confianca}</p>
-<p class="small">Baseado em dados reais de mercado</p>`;
+<p>Baseado em idade, uso, condição e mercado atual</p>`;
 
-document.getElementById("valorHidden").value = texto;
 }
 </script>
 
