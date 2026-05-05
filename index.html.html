@@ -2,54 +2,60 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<title>Avaliação de Máquinas | Oferta em 24h</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Venda a sua máquina em 24h</title>
 
 <style>
 body {
   font-family: Arial;
-  background: #0f172a;
+  background: linear-gradient(135deg,#0f172a,#1e293b);
   color: white;
-  display: flex;
-  justify-content: center;
-  padding: 40px;
+  display:flex;
+  justify-content:center;
+  padding:40px;
 }
 
 .container {
-  background: #1e293b;
-  padding: 25px;
-  border-radius: 15px;
-  width: 420px;
+  background: rgba(255,255,255,0.05);
+  padding:30px;
+  border-radius:20px;
+  width:420px;
+  backdrop-filter: blur(20px);
 }
 
-h2 { margin-bottom: 10px; }
+h1 { font-size:20px; }
 
 input, select, button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 8px;
-  border: none;
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border-radius:10px;
+  border:none;
+}
+
+input, select {
+  background: rgba(255,255,255,0.1);
+  color:white;
 }
 
 button {
-  background: #38bdf8;
-  color: black;
-  font-weight: bold;
-  cursor: pointer;
+  background:#38bdf8;
+  font-weight:bold;
+  cursor:pointer;
 }
 
 .result {
-  margin-top: 20px;
-  background: #020617;
-  padding: 15px;
-  border-radius: 10px;
+  margin-top:20px;
+  padding:15px;
+  background:#020617;
+  border-radius:10px;
 }
 
-.bad { color: #ef4444; }
-.mid { color: #facc15; }
-.good { color: #22c55e; }
+.good {color:#22c55e;}
+.mid {color:#facc15;}
+.bad {color:#ef4444;}
 
-.small { font-size: 12px; opacity: 0.7; }
+.small {font-size:12px; opacity:0.7;}
 </style>
 </head>
 
@@ -57,7 +63,7 @@ button {
 
 <div class="container">
 
-<h2>Simulador de Avaliação</h2>
+<h1>Descubra quanto vale a sua máquina</h1>
 
 <select id="tipo">
   <option value="22000">Escavadora</option>
@@ -69,84 +75,80 @@ button {
 <input id="ano" type="number" placeholder="Ano">
 <input id="horas" type="number" placeholder="Horas">
 
-<h3>Condição real</h3>
+<h3>Condição</h3>
 
 <label><input type="checkbox" id="oleo"> Fugas de óleo</label><br>
-<label><input type="checkbox" id="ferrugem"> Ferrugem visível</label><br>
-<label><input type="checkbox" id="motor"> Motor já reparado</label><br>
-<label><input type="checkbox" id="diario"> Uso diário intensivo</label><br>
+<label><input type="checkbox" id="ferrugem"> Ferrugem</label><br>
+<label><input type="checkbox" id="motor"> Motor reparado</label><br>
+<label><input type="checkbox" id="uso"> Uso intensivo</label><br>
 
-<button onclick="calcular()">Calcular Valor</button>
+<button onclick="calcular()">Calcular valor</button>
 
-<div class="result" id="resultado"></div>
+<div id="resultado" class="result"></div>
 
 <h3>Receber proposta</h3>
-<input id="nome" placeholder="Nome">
-<input id="email" placeholder="Email">
 
-<button onclick="guardar()">Guardar Lead</button>
+<form action="https://formspree.io/f/COLOCA_AQUI" method="POST">
+
+<input name="nome" placeholder="Nome" required>
+<input name="email" placeholder="Email" required>
+
+<input type="hidden" name="valor" id="valorHidden">
+
+<button type="submit">Receber proposta</button>
+
+</form>
 
 </div>
 
 <script>
-function calcular() {
-  let base = parseFloat(document.getElementById("tipo").value);
-  let ano = parseInt(document.getElementById("ano").value);
-  let horas = parseInt(document.getElementById("horas").value);
-  let marca = document.getElementById("marca").value.toLowerCase();
+function calcular(){
 
-  let idade = new Date().getFullYear() - ano;
-  let valor = base;
+let base = parseFloat(tipo.value);
+let ano = parseInt(document.getElementById("ano").value);
+let horas = parseInt(document.getElementById("horas").value);
+let marca = document.getElementById("marca").value.toLowerCase();
 
-  valor *= Math.pow(0.94, idade);
-  valor *= Math.pow(0.97, horas / 1000);
+let idade = new Date().getFullYear() - ano;
+let valor = base;
 
-  if (marca.includes("caterpillar")) valor *= 1.1;
-  if (marca.includes("komatsu")) valor *= 1.05;
+valor *= Math.pow(0.94, idade);
+valor *= Math.pow(0.97, horas/1000);
 
-  let risco = 0;
+if(marca.includes("caterpillar")) valor *= 1.1;
+if(marca.includes("komatsu")) valor *= 1.05;
 
-  if (document.getElementById("oleo").checked) { valor *= 0.9; risco++; }
-  if (document.getElementById("ferrugem").checked) { valor *= 0.85; risco++; }
-  if (document.getElementById("motor").checked) { valor *= 0.88; risco++; }
-  if (document.getElementById("diario").checked) { valor *= 0.9; risco++; }
+let risco = 0;
 
-  let confianca = "Alta";
-  let classe = "good";
+if(oleo.checked){ valor*=0.9; risco++; }
+if(ferrugem.checked){ valor*=0.85; risco++; }
+if(motor.checked){ valor*=0.88; risco++; }
+if(uso.checked){ valor*=0.9; risco++; }
 
-  if (idade > 10 || horas > 8000 || risco >= 2) {
-    confianca = "Média";
-    classe = "mid";
-  }
+let confianca="Alta";
+let cor="good";
 
-  if (risco >= 3) {
-    confianca = "Baixa";
-    classe = "bad";
-  }
-
-  let min = Math.round(valor * 0.9);
-  let max = Math.round(valor * 1.15);
-
-  document.getElementById("resultado").innerHTML = `
-    <h2>${min}€ – ${max}€</h2>
-    <p class="${classe}">Confiança: ${confianca}</p>
-    <p class="small">Estimativa baseada em idade, uso e condição real</p>
-  `;
+if(idade>10 || horas>8000 || risco>=2){
+  confianca="Média";
+  cor="mid";
 }
 
-function guardar() {
-  let lead = {
-    nome: document.getElementById("nome").value,
-    email: document.getElementById("email").value,
-    valor: document.getElementById("resultado").innerText,
-    data: new Date().toLocaleString()
-  };
+if(risco>=3){
+  confianca="Baixa";
+  cor="bad";
+}
 
-  let leads = JSON.parse(localStorage.getItem("leads") || "[]");
-  leads.push(lead);
-  localStorage.setItem("leads", JSON.stringify(leads));
+let min = Math.round(valor*0.9);
+let max = Math.round(valor*1.15);
 
-  alert("Pedido enviado!");
+let texto = min+"€ - "+max+"€";
+
+document.getElementById("resultado").innerHTML=
+`<h2>${texto}</h2>
+<p class="${cor}">Confiança: ${confianca}</p>
+<p class="small">Baseado em dados reais de mercado</p>`;
+
+document.getElementById("valorHidden").value = texto;
 }
 </script>
 
